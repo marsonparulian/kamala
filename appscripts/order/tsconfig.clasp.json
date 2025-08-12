@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "lib": ["ES5", "ES2017"],
+    "target": "ES5",
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "types": ["google-apps-script"]
+  },
+  "include": ["Code.ts"]
+}

@@ -1,16 +1,10 @@
 {
   "scriptId": "1o2gAxz1Xo9NirCKCl0q_3mKlxAcypwuNvDZCubM5muSylVHb9YxXEoZd",
   "rootDir": "",
-  "scriptExtensions": [
-    ".js",
-    ".gs"
-  ],
-  "htmlExtensions": [
-    ".html"
-  ],
-  "jsonExtensions": [
-    ".json"
-  ],
+  "scriptExtensions": [".js", ".gs"],
+  "htmlExtensions": [".html"],
+  "jsonExtensions": [".json"],
   "filePushOrder": [],
-  "skipSubdirectories": false
+  "skipSubdirectories": false,
+  "tsconfig": "./tsconfig.clasp.json"
 }
