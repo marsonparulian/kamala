@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // Master of order form, to be cloned
 const MASTER_FORM_ID = "1Lab_Wbbug5J9aVg11ZcgGrqTC2vbszjmwuUD_JGxBEU";
 
@@ -16,8 +18,9 @@ function getOrderFormsFolderId(space = "kanisius") {
 }
 
 function doGet() {
-  return HtmlService.createHtmlOutputFromFile('generator')
-    .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+  return HtmlService.createHtmlOutputFromFile("generator").setSandboxMode(
+    HtmlService.SandboxMode.IFRAME
+  );
 }
 
 /**
@@ -26,12 +29,30 @@ function doGet() {
  * The day names and month names are in Indonesian.
  */
 function getWeekdayDates() {
-  const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-  const monthNames = [
-    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  const dayNames = [
+    "Minggu",
+    "Senin",
+    "Selasa",
+    "Rabu",
+    "Kamis",
+    "Jumat",
+    "Sabtu",
   ];
-  const dates = [];
+  const monthNames = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+  const dates: string[] = [];
 
   // Get today's date
   const today = new Date();
@@ -50,13 +71,21 @@ function getWeekdayDates() {
   }
 
   // Add Monday to the array
-  dates.push(`${dayNames[monday.getDay()]} ${monday.getDate()} ${monthNames[monday.getMonth()]}`);
+  dates.push(
+    `${dayNames[monday.getDay()]} ${monday.getDate()} ${
+      monthNames[monday.getMonth()]
+    }`
+  );
 
   // Loop to get Tuesday, Wednesday, Thursday, and Friday
   for (let i = 1; i < 5; i++) {
     const nextDay = new Date(monday);
     nextDay.setDate(monday.getDate() + i);
-    dates.push(`${dayNames[nextDay.getDay()]} ${nextDay.getDate()} ${monthNames[nextDay.getMonth()]}`);
+    dates.push(
+      `${dayNames[nextDay.getDay()]} ${nextDay.getDate()} ${
+        monthNames[nextDay.getMonth()]
+      }`
+    );
   }
 
   return dates;
@@ -64,7 +93,7 @@ function getWeekdayDates() {
 
 function doPost(e) {
   console.log("this is doPost");
-  Logger.log('doPost..');
+  Logger.log("doPost..");
 
   // e is an object containing the form data
   const menuData = e.parameter.day_menu;
@@ -75,7 +104,7 @@ function doPost(e) {
   Logger.log(priceData);
 
   // Return a success message or new HTML
-  return HtmlService.createHtmlOutput('<h1>Form submitted successfully!</h1>');
+  return HtmlService.createHtmlOutput("<h1>Form submitted successfully!</h1>");
 }
 
 /**
@@ -83,7 +112,6 @@ function doPost(e) {
  */
 function processForm(formData) {
   console.log("ProcessForm..");
-
 
   // The folder to save the form
   const folderId = getOrderFormsFolderId();
@@ -102,7 +130,8 @@ function processForm(formData) {
   return cloneFormAndModify();
 
   const formTitle = "form title 2";
-  const formDesc = "This is the description. <br /> " + menus[0] + "<br /> " + menus[1];
+  const formDesc =
+    "This is the description. <br /> " + menus[0] + "<br /> " + menus[1];
 
   // The form id that will be set later. Also will be used to move the file in the 'finally' block
   let formId = "";
@@ -110,15 +139,16 @@ function processForm(formData) {
   try {
     // Create a form in the ORDER_FORMS_FOLDER with the above title, then add the description
     console.log("Creating form..");
-    const form = FormApp.create(formTitle, false);
+    const form = FormApp.create(formTitle);
     form.setDescription(formDesc);
     console.log("Finish setting description");
 
     // Loop the `menus`. On every menus that is not empty, add radio box to the form with options "A", "B", "C", and "D".
     for (let i = 0; i < menus.length; i++) {
-      if (menus[i] && menus[i].trim() !== '') {
+      if (menus[i] && menus[i].trim() !== "") {
         const item = form.addMultipleChoiceItem();
-        item.setTitle(days[i] + ' - ' + menus[i] + ' (Rp ' + prices[i] + ')')
+        item
+          .setTitle(days[i] + " - " + menus[i] + " (Rp " + prices[i] + ")")
           .setChoiceValues(["A", "B", "C", "D"]);
       }
     }
@@ -128,16 +158,18 @@ function processForm(formData) {
     form.addSomethingNotExist();
 
     // At the end of the form add file upload input with maximum file upload is 10 Mb.
-    form.addFileUploadItem()
-      .setTitle('Upload bukti pembayaran')
-      .setHelpText('Maximum file size is 10MB.')
+    form
+      .addFileUploadItem()
+      .setTitle("Upload bukti pembayaran")
+      .setHelpText("Maximum file size is 10MB.")
       .setDestinationFolder(folder)
       .setMaxFileSize(10 * 1024 * 1024);
 
     console.log("Finishadd file upload");
 
     // Form settings:
-    form.setCollectEmail(true)
+    form
+      .setCollectEmail(true)
       // .setRequireLogin(true) // Required for file upload
       .setAllowResponseEdits(false)
       .setLimitOneResponsePerUser(false)
@@ -154,26 +186,37 @@ function processForm(formData) {
 
     // If the from successfuly published:
     // 1. Save the link of the form to script attribute 'kanisius-last-form-url'
-    PropertiesService.getScriptProperties().setProperty('kanisius-last-form-url', formUrl);
+    PropertiesService.getScriptProperties().setProperty(
+      "kanisius-last-form-url",
+      formUrl
+    );
 
     // 2. Save the id of the form to script attribute 'kanisius-last-form-id'
-    PropertiesService.getScriptProperties().setProperty('kanisius-last-form-id', formId);
+    PropertiesService.getScriptProperties().setProperty(
+      "kanisius-last-form-id",
+      formId
+    );
 
     // 3. Save the success / failure of the form publication to script attribute 'kanisius-last-form-generation'. The value set to 'true'.
-    PropertiesService.getScriptProperties().setProperty('kanisius-last-form-generation', 'true');
+    PropertiesService.getScriptProperties().setProperty(
+      "kanisius-last-form-generation",
+      "true"
+    );
 
     // 4. Display 'success' html file.
-    return HtmlService.createHtmlOutputFromFile('success');
-
+    return HtmlService.createHtmlOutputFromFile("success");
   } catch (error) {
     console.error("Failed to generate form: " + error.message);
 
     // If the form NOT successfuly published do :
     // 1. Set script attribute 'kanisius-last-form-generation' to 'false'.
-    PropertiesService.getScriptProperties().setProperty('kanisius-last-form-generation', 'false');
+    PropertiesService.getScriptProperties().setProperty(
+      "kanisius-last-form-generation",
+      "false"
+    );
 
     // 2. Display 'failure' html file
-    return HtmlService.createHtmlOutputFromFile('failure');
+    return HtmlService.createHtmlOutputFromFile("failure");
   } finally {
     // If form id is set, move the form file to the destination folder
     if (formId) {
@@ -201,7 +244,6 @@ function cloneFormAndModify() {
   console.log(` ${sourceForm.getItems().length}`);
   console.log(` ${sourceForm.getDescription()}`);
 
-
   // Create a copy of the source form. This also copies all existing questions.
   const driveClonedFile = copyFile();
   // Retrieve the cloned form by id
@@ -211,7 +253,9 @@ function cloneFormAndModify() {
   const items = clonedForm.getItems();
 
   // Find the file upload item. Assuming there's only one.
-  const fileUploadItem = items.find(item => item.getType() === FormApp.ItemType.FILE_UPLOAD);
+  const fileUploadItem = items.find(
+    (item) => item.getType() === FormApp.ItemType.FILE_UPLOAD
+  );
 
   // Remove the file upload item from its original position
   // if (fileUploadItem) {
@@ -219,10 +263,10 @@ function cloneFormAndModify() {
   // }
 
   // Prepend a paragraph item
-  clonedForm.addParagraphTextItem()
-    .setTitle('Please read this carefully')
-    .setHelpText('This is a new section for you to provide information.');
-
+  clonedForm
+    .addParagraphTextItem()
+    .setTitle("Please read this carefully")
+    .setHelpText("This is a new section for you to provide information.");
 
   // Re-add the file upload item to the end of the form
   if (fileUploadItem) {
@@ -239,7 +283,6 @@ function cloneFormAndModify() {
 
     // Set the upload folder
     setUploadFolder(clonedForm);
-
   }
 
   // Moves the first item to be the last item.
@@ -249,19 +292,19 @@ function cloneFormAndModify() {
   console.log("end of this function");
 }
 /**
- * Copy master form. 
+ * Copy master form.
  * Copying file is the only way to have the 'upload file' item in the form, since AppScript API does not provide method to add 'file upload'
  * @return {DriveApp.File} the copied form.
  */
 function copyFile() {
   sourceFormId = MASTER_FORM_ID;
-  // Optional: Replace with the ID of the destination folder  
-  // If not specified, the copy will be placed in the root of your Drive  
+  // Optional: Replace with the ID of the destination folder
+  // If not specified, the copy will be placed in the root of your Drive
   const destinationFolderId = getOrderFormsFolderId();
 
   const sourceFile = DriveApp.getFileById(sourceFormId);
 
-  // Create a new name for the copied form  
+  // Create a new name for the copied form
   const newFormName = sourceFile.getName() + " (Copy)";
   let copiedFile = null;
 
@@ -311,10 +354,12 @@ function setUploadFolder(form) {
     }
   }
   if (items.length > 0) {
-
     // const fileUploadItem = items[0].asFileUploadItem();
-
     // // Assign the new folder's ID to the file upload question.
     // fileUploadItem.setDestinationFolder(uploadFolder);
   }
+}
+
+function testFunction() {
+  console.log("This is a test function");
 }
