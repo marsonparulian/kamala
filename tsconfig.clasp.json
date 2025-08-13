@@ -8,7 +8,8 @@
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["google-apps-script"]
   },
   "include": ["appscripts/**/*.ts"],
   "exclude": ["node_modules", "dist"]

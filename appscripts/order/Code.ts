@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // Master of order form, to be cloned
 const MASTER_FORM_ID = "1Lab_Wbbug5J9aVg11ZcgGrqTC2vbszjmwuUD_JGxBEU";
 
@@ -91,7 +89,7 @@ function getWeekdayDates() {
   return dates;
 }
 
-function doPost(e) {
+function doPost(e: GoogleAppsScript.Events.DoPost) {
   console.log("this is doPost");
   Logger.log("doPost..");
 
@@ -110,7 +108,11 @@ function doPost(e) {
 /**
  * Form submission
  */
-function processForm(formData) {
+function processForm(formData: {
+  "days[]": string[];
+  "menus[]": string[];
+  "prices[]": string[];
+}) {
   console.log("ProcessForm..");
 
   // The folder to save the form
@@ -155,15 +157,15 @@ function processForm(formData) {
 
     console.log("Finish adding multiple choices");
 
-    form.addSomethingNotExist();
+    // form.addSomethingNotExist();
 
     // At the end of the form add file upload input with maximum file upload is 10 Mb.
-    form
-      .addFileUploadItem()
-      .setTitle("Upload bukti pembayaran")
-      .setHelpText("Maximum file size is 10MB.")
-      .setDestinationFolder(folder)
-      .setMaxFileSize(10 * 1024 * 1024);
+    // form
+    //   .addFileUploadItem()
+    //   .setTitle("Upload bukti pembayaran")
+    //   .setHelpText("Maximum file size is 10MB.")
+    //   .setDestinationFolder(folder)
+    //   .setMaxFileSize(10 * 1024 * 1024);
 
     console.log("Finishadd file upload");
 
@@ -172,14 +174,14 @@ function processForm(formData) {
       .setCollectEmail(true)
       // .setRequireLogin(true) // Required for file upload
       .setAllowResponseEdits(false)
-      .setLimitOneResponsePerUser(false)
-      .setAllowFileUploads(true); // Redundant but good practice
+      .setLimitOneResponsePerUser(false);
+    // .setAllowFileUploads(true); // Redundant but good practice
 
     console.log("Finish set additional settings");
 
     // Publish the form right away.
     console.log("publishing form..");
-    form.setPublished(true);
+    // form.setPublished(true);
     const formUrl = form.getPublishedUrl();
     formId = form.getId();
     console.log(`form id is set : ${formId}`);
@@ -205,8 +207,13 @@ function processForm(formData) {
 
     // 4. Display 'success' html file.
     return HtmlService.createHtmlOutputFromFile("success");
-  } catch (error) {
-    console.error("Failed to generate form: " + error.message);
+  } catch (error: any) {
+    // Log error
+    if (error instanceof Error) {
+      console.error(`Failed to generate form: ${error.message}`);
+    } else {
+      console.error(`Unknown error : ${String(error)}`);
+    }
 
     // If the form NOT successfuly published do :
     // 1. Set script attribute 'kanisius-last-form-generation' to 'false'.
@@ -294,10 +301,10 @@ function cloneFormAndModify() {
 /**
  * Copy master form.
  * Copying file is the only way to have the 'upload file' item in the form, since AppScript API does not provide method to add 'file upload'
- * @return {DriveApp.File} the copied form.
+ * @return {GoogleAppsScript.Drive.File} the copied form.
  */
-function copyFile() {
-  sourceFormId = MASTER_FORM_ID;
+function copyFile(): GoogleAppsScript.Drive.File {
+  const sourceFormId = MASTER_FORM_ID;
   // Optional: Replace with the ID of the destination folder
   // If not specified, the copy will be placed in the root of your Drive
   const destinationFolderId = getOrderFormsFolderId();
@@ -306,7 +313,7 @@ function copyFile() {
 
   // Create a new name for the copied form
   const newFormName = sourceFile.getName() + " (Copy)";
-  let copiedFile = null;
+  let copiedFile: GoogleAppsScript.Drive.File | null = null;
 
   if (destinationFolderId) {
     const destinationFolder = DriveApp.getFolderById(destinationFolderId);
@@ -314,6 +321,17 @@ function copyFile() {
   } else {
     copiedFile = sourceFile.makeCopy(newFormName);
   }
+
+  // Throw error if copying process is failed
+  if (copiedFile === null) {
+    throw new Error(
+      "Failed copying file in DriveApp :" +
+        newFormName +
+        " to " +
+        destinationFolderId
+    );
+  }
+
   console.log("Finish copying file");
 
   return copiedFile;
