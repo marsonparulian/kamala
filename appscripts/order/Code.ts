@@ -1,3 +1,6 @@
+// Shortened types
+type Form = GoogleAppsScript.Forms.Form;
+
 // Master of order form, to be cloned
 const MASTER_FORM_ID = "1Lab_Wbbug5J9aVg11ZcgGrqTC2vbszjmwuUD_JGxBEU";
 
@@ -130,54 +133,57 @@ function processForm(formData: {
   const folder = DriveApp.getFolderById(folderId);
 
   // Acquire the form data
-  const days = formData["days[]"];
-  const menus = formData["menus[]"];
-  const prices = formData["prices[]"];
+  const data = {
+    days: formData["days[]"],
+    menus: formData["menus[]"],
+    prices: formData["prices[]"],
+  };
 
-  // FIXME
-  return cloneFormAndModify();
+  // Create form name and other needed texts
+  const { clonedFormName: cloneFormName } = createNames(data);
 
-  const formTitle = "form title 2";
-  const formDesc =
-    "This is the description. <br /> " + menus[0] + "<br /> " + menus[1];
+  // Clone form
+  const clonedForm = cloneForm();
+
+  // Create form content and questions
+  addOpeningParagraph(clonedForm, data);
+  addQuestions(clonedForm, data);
+
+  // Move upload file to the last questions
+  moveUploadFileItem(clonedForm);
+  // Restore the upload destination folder
+  restoreUploadFileFolder(clonedForm);
+
+  //Set the cloned form publicly accessible
+  setTheFormAccessible(clonedForm);
+
+  // Set form settings
+  setFormSetting(clonedForm);
+
+  // end of the whole process
+  return;
+
+  // const formTitle = "form title 2";
+  // const formDesc =
+  //   "This is the description. <br /> " + menus[0] + "<br /> " + menus[1];
 
   // The form id that will be set later. Also will be used to move the file in the 'finally' block
   let formId = "";
 
   try {
     // Create a form in the ORDER_FORMS_FOLDER with the above title, then add the description
-    console.log("Creating form..");
-    const form = FormApp.create(formTitle);
-    form.setDescription(formDesc);
-    console.log("Finish setting description");
-
-    // Loop the `menus`. On every menus that is not empty, add radio box to the form with options "A", "B", "C", and "D".
-    for (let i = 0; i < menus.length; i++) {
-      if (menus[i] && menus[i].trim() !== "") {
-        const item = form.addMultipleChoiceItem();
-        item
-          .setTitle(days[i] + " - " + menus[i] + " (Rp " + prices[i] + ")")
-          .setChoiceValues(["A", "B", "C", "D"]);
-      }
-    }
-
-    console.log("Finish adding multiple choices");
-
-    // Form settings:
-    form
-      .setCollectEmail(true)
-      // .setRequireLogin(true) // Required for file upload
-      .setAllowResponseEdits(false)
-      .setLimitOneResponsePerUser(false);
-    // .setAllowFileUploads(true); // Redundant but good practice
+    // console.log("Creating form..");
+    // const form = FormApp.create(formTitle);
+    // form.setDescription(formDesc);
+    // console.log("Finish setting description");
 
     console.log("Finish set additional settings");
 
     // Publish the form right away.
     console.log("publishing form..");
     // form.setPublished(true);
-    const formUrl = form.getPublishedUrl();
-    formId = form.getId();
+    const formUrl = clonedForm.getPublishedUrl();
+    formId = clonedForm.getId();
     console.log(`form id is set : ${formId}`);
 
     // If the from successfuly published:
@@ -228,9 +234,8 @@ function processForm(formData: {
   }
 }
 
-function cloneFormAndModify() {
-  // Replace with the ID of the source form you want to clone.
-  // You can find the ID in the URL of the form: docs.google.com/forms/d/YOUR_FORM_ID/edit
+function cloneForm(): Form {
+  // ID of the 'master' form, containing the upload file feature.
   const sourceFormId = MASTER_FORM_ID;
 
   console.log("Starting cloneFormAndModify");
@@ -263,34 +268,18 @@ function cloneFormAndModify() {
   //   clonedForm.deleteItem(fileUploadItem.getIndex());
   // }
 
-  // Prepend a paragraph item
-  clonedForm
-    .addParagraphTextItem()
-    .setTitle("Please read this carefully")
-    .setHelpText("This is a new section for you to provide information.");
-
-  // Re-add the file upload item to the end of the form
-  if (fileUploadItem) {
-    //   clonedForm.addFileUploadItem()
-    //     .setTitle(fileUploadItem.getTitle())
-    //     .setHelpText(fileUploadItem.getHelpText())
-    //     .setRequired(fileUploadItem.isRequired())
-    //     // .setFolderId(fileUploadItem.asFileUploadItem().getDestinationFolder().getId())
-    //     .setLimit(fileUploadItem.asFileUploadItem().getFileLimit())
-    //     .setAllowMultiple(fileUploadItem.asFileUploadItem().isAllowingMultipleFiles())
-    //     .setAllowedFileTypes(fileUploadItem.asFileUploadItem().getAllowedFileTypes());
-
-    console.log("Before setup upload folder");
-
-    // Set the upload folder
-    setUploadFolder(clonedForm);
-  }
+  // Add a paragraph item
+  // clonedForm
+  //   .addParagraphTextItem()
+  //   .setTitle("Please read this carefully")
+  //   .setHelpText("This is a new section for you to provide information.");
 
   // Moves the first item to be the last item.
-  console.log("Before moveItem");
-  clonedForm.moveItem(0, clonedForm.getItems().length - 1);
+  // console.log("Before moveItem");
+  // clonedForm.moveItem(0, clonedForm.getItems().length - 1);
 
   console.log("end of this function");
+  return clonedForm;
 }
 /**
  * Copy master form.
@@ -336,7 +325,7 @@ function copyFile(): GoogleAppsScript.Drive.File {
  *
  * @param {GoogleAppsScript.Forms.Form} form The form object to modify.
  */
-function setUploadFolder(form) {
+function setUploadFolder(form: Form) {
   // Get the form's file ID.
   const formFileId = form.getId();
 
@@ -357,17 +346,97 @@ function setUploadFolder(form) {
   const items = form.getItems(FormApp.ItemType.FILE_UPLOAD);
   console.log(`number of items in the form: ${items.length}`);
 
-  for (let i = 0; i < items.length; i++) {
-    console.log(`item type : ${items[i].getType().name()}`);
-    if (items[i].asFileUploadItem) {
-      console.log(`item #${items[i]} has 'asFileUploadItem`);
-    } else {
-      console.log(`item #${items[i]} has NOT 'asFileUploadItem`);
-    }
-  }
+  // FIXME: uncomment and fix block below
+  // for (let i = 0; i < items.length; i++) {
+  //   console.log(`item type : ${items[i].getType().name()}`);
+  //   if (items[i].asFileUploadItem) {
+  //     console.log(`item #${items[i]} has 'asFileUploadItem`);
+  //   } else {
+  //     console.log(`item #${items[i]} has NOT 'asFileUploadItem`);
+  //   }
+  // }
+
   if (items.length > 0) {
     // const fileUploadItem = items[0].asFileUploadItem();
     // // Assign the new folder's ID to the file upload question.
     // fileUploadItem.setDestinationFolder(uploadFolder);
   }
+}
+function createNames(data: {
+  days: string[];
+  menus: string[];
+  prices: string[];
+}): { clonedFormName: string } {
+  console.log("Function not implemented");
+
+  return {
+    clonedFormName: "Temporary form name",
+  };
+}
+
+/**
+ * Add the opening paragraph
+ * @param form
+ * @param data
+ */
+function addOpeningParagraph(
+  form: Form,
+  data: { days: string[]; menus: string[]; prices: string[] }
+) {
+  console.log("Function not implemented");
+}
+/**
+ * Add the menu questions (radio)
+ * @param clonedForm
+ * @param data
+ */
+function addQuestions(
+  clonedForm: Form,
+  data: { days: string[]; menus: string[]; prices: string[] }
+) {
+  const { days, menus, prices } = data;
+
+  // Loop the `menus`. On every menus that is not empty, add radio box to the form with options "A", "B", "C", and "D".
+  for (let i = 0; i < data.menus.length; i++) {
+    if (menus[i] && menus[i].trim() !== "") {
+      const item = clonedForm.addMultipleChoiceItem();
+      item
+        .setTitle(days[i] + " - " + menus[i] + " (Rp " + prices[i] + ")")
+        .setChoiceValues(["A", "B", "C", "D"]);
+    }
+  }
+
+  console.log("Finish adding multiple choices");
+
+  console.log("Function not implemented");
+}
+function moveUploadFileItem(clonedForm: GoogleAppsScript.Forms.Form) {
+  console.log("Function not implemented");
+}
+function restoreUploadFileFolder(clonedForm: GoogleAppsScript.Forms.Form) {
+  console.log("Function not implemented");
+}
+
+/**
+ * Allow form to be publicly accessible
+ * @param clonedForm
+ */
+function setTheFormAccessible(clonedForm: GoogleAppsScript.Forms.Form) {
+  console.log("Function not implemented");
+}
+
+/**
+ * Set form settings
+ * @param clonedForm
+ */
+function setFormSetting(clonedForm: GoogleAppsScript.Forms.Form) {
+  // Form settings:
+  clonedForm
+    .setCollectEmail(true)
+    // .setRequireLogin(true) // Required for file upload
+    .setAllowResponseEdits(false)
+    .setLimitOneResponsePerUser(false);
+  // .setAllowFileUploads(true); // Redundant but good practice
+
+  console.log("Function not implemented.");
 }
