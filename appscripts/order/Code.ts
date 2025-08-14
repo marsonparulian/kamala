@@ -252,6 +252,7 @@ function cloneForm(): Form {
 
   // Create a copy of the source form. This also copies all existing questions.
   const driveClonedFile = copyFile();
+  driveClonedFile.setName("New File 1");
   // Retrieve the cloned form by id
   const clonedForm = FormApp.openById(driveClonedFile.getId());
 
