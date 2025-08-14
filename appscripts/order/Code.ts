@@ -1,6 +1,11 @@
 // Master of order form, to be cloned
 const MASTER_FORM_ID = "1Lab_Wbbug5J9aVg11ZcgGrqTC2vbszjmwuUD_JGxBEU";
 
+// The props constants
+const KANISIUS_LAST_FORM_ID = "kanisius-last-form-id";
+const KANISIUS_LAST_FORM_URL = "kanisius-last-form-url";
+const KANISIUS_FORM_GENERATION_SUCCESS = "kanisius-last-generation-success";
+
 /**
  * The folder of the forms.
  * @param space{string} - ID / space of the forms, e.g.: Kanisius, Gonzaga, etc.
@@ -89,6 +94,11 @@ function getWeekdayDates() {
   return dates;
 }
 
+/**
+ * Note: This function currently not being used.
+ * @param e
+ * @returns
+ */
 function doPost(e: GoogleAppsScript.Events.DoPost) {
   console.log("this is doPost");
   Logger.log("doPost..");
@@ -124,10 +134,6 @@ function processForm(formData: {
   const menus = formData["menus[]"];
   const prices = formData["prices[]"];
 
-  // console.log(days);
-  // console.log(menus);
-  // console.log(prices);
-
   // FIXME
   return cloneFormAndModify();
 
@@ -157,18 +163,6 @@ function processForm(formData: {
 
     console.log("Finish adding multiple choices");
 
-    // form.addSomethingNotExist();
-
-    // At the end of the form add file upload input with maximum file upload is 10 Mb.
-    // form
-    //   .addFileUploadItem()
-    //   .setTitle("Upload bukti pembayaran")
-    //   .setHelpText("Maximum file size is 10MB.")
-    //   .setDestinationFolder(folder)
-    //   .setMaxFileSize(10 * 1024 * 1024);
-
-    console.log("Finishadd file upload");
-
     // Form settings:
     form
       .setCollectEmail(true)
@@ -189,19 +183,19 @@ function processForm(formData: {
     // If the from successfuly published:
     // 1. Save the link of the form to script attribute 'kanisius-last-form-url'
     PropertiesService.getScriptProperties().setProperty(
-      "kanisius-last-form-url",
+      KANISIUS_LAST_FORM_URL,
       formUrl
     );
 
     // 2. Save the id of the form to script attribute 'kanisius-last-form-id'
     PropertiesService.getScriptProperties().setProperty(
-      "kanisius-last-form-id",
+      KANISIUS_LAST_FORM_ID,
       formId
     );
 
     // 3. Save the success / failure of the form publication to script attribute 'kanisius-last-form-generation'. The value set to 'true'.
     PropertiesService.getScriptProperties().setProperty(
-      "kanisius-last-form-generation",
+      KANISIUS_FORM_GENERATION_SUCCESS,
       "true"
     );
 
@@ -218,7 +212,7 @@ function processForm(formData: {
     // If the form NOT successfuly published do :
     // 1. Set script attribute 'kanisius-last-form-generation' to 'false'.
     PropertiesService.getScriptProperties().setProperty(
-      "kanisius-last-form-generation",
+      KANISIUS_FORM_GENERATION_SUCCESS,
       "false"
     );
 
@@ -376,8 +370,4 @@ function setUploadFolder(form) {
     // // Assign the new folder's ID to the file upload question.
     // fileUploadItem.setDestinationFolder(uploadFolder);
   }
-}
-
-function testFunction() {
-  console.log("This is a test function");
 }
