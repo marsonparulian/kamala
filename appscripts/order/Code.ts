@@ -1,3 +1,9 @@
+type MenusFormData = {
+  days: string[];
+  menus: string[];
+  prices: string[];
+};
+
 // Shortened types
 type Form = GoogleAppsScript.Forms.Form;
 
@@ -121,11 +127,7 @@ function doPost(e: GoogleAppsScript.Events.DoPost) {
 /**
  * Form submission
  */
-function processForm(formData: {
-  "days[]": string[];
-  "menus[]": string[];
-  "prices[]": string[];
-}) {
+function processForm(formData) {
   console.log("ProcessForm..");
 
   // The folder to save the form
@@ -133,7 +135,7 @@ function processForm(formData: {
   const folder = DriveApp.getFolderById(folderId);
 
   // Acquire the form data
-  const data = {
+  const data: MenusFormData = {
     days: formData["days[]"],
     menus: formData["menus[]"],
     prices: formData["prices[]"],
@@ -143,7 +145,7 @@ function processForm(formData: {
   const { clonedFormName: cloneFormName } = createNames(data);
 
   // Clone form
-  const clonedForm = cloneForm();
+  const clonedForm = cloneForm(cloneFormName);
 
   // Create form content and questions
   addOpeningParagraph(clonedForm, data);
@@ -234,7 +236,7 @@ function processForm(formData: {
   }
 }
 
-function cloneForm(): Form {
+function cloneForm(clonedFormName: string): Form {
   // ID of the 'master' form, containing the upload file feature.
   const sourceFormId = MASTER_FORM_ID;
 
@@ -251,18 +253,17 @@ function cloneForm(): Form {
   console.log(` ${sourceForm.getDescription()}`);
 
   // Create a copy of the source form. This also copies all existing questions.
-  const driveClonedFile = copyFile();
-  driveClonedFile.setName("New File 1");
+  const driveClonedFile = copyFile(clonedFormName);
   // Retrieve the cloned form by id
   const clonedForm = FormApp.openById(driveClonedFile.getId());
 
   // Get all items from the cloned form
-  const items = clonedForm.getItems();
+  // const items = clonedForm.getItems();
 
   // Find the file upload item. Assuming there's only one.
-  const fileUploadItem = items.find(
-    (item) => item.getType() === FormApp.ItemType.FILE_UPLOAD
-  );
+  // const fileUploadItem = items.find(
+  //   (item) => item.getType() === FormApp.ItemType.FILE_UPLOAD
+  // );
 
   // Remove the file upload item from its original position
   // if (fileUploadItem) {
@@ -287,7 +288,7 @@ function cloneForm(): Form {
  * Copying file is the only way to have the 'upload file' item in the form, since AppScript API does not provide method to add 'file upload'
  * @return {GoogleAppsScript.Drive.File} the copied form.
  */
-function copyFile(): GoogleAppsScript.Drive.File {
+function copyFile(clonedFormName: string): GoogleAppsScript.Drive.File {
   const sourceFormId = MASTER_FORM_ID;
   // Optional: Replace with the ID of the destination folder
   // If not specified, the copy will be placed in the root of your Drive
@@ -296,7 +297,7 @@ function copyFile(): GoogleAppsScript.Drive.File {
   const sourceFile = DriveApp.getFileById(sourceFormId);
 
   // Create a new name for the copied form
-  const newFormName = sourceFile.getName() + " (Copy)";
+  const newFormName = clonedFormName;
   let copiedFile: GoogleAppsScript.Drive.File | null = null;
 
   if (destinationFolderId) {
@@ -363,15 +364,14 @@ function setUploadFolder(form: Form) {
     // fileUploadItem.setDestinationFolder(uploadFolder);
   }
 }
-function createNames(data: {
-  days: string[];
-  menus: string[];
-  prices: string[];
-}): { clonedFormName: string } {
+function createNames(data: MenusFormData): { clonedFormName: string } {
   console.log("Function not implemented");
 
+  // Get the first and last day
+  const { firstDay, lastDay } = getFirstAndLastDay(data);
+
   return {
-    clonedFormName: "Temporary form name",
+    clonedFormName: firstDay,
   };
 }
 
@@ -440,4 +440,25 @@ function setFormSetting(clonedForm: GoogleAppsScript.Forms.Form) {
   // .setAllowFileUploads(true); // Redundant but good practice
 
   console.log("Function not implemented.");
+}
+function getFirstAndLastDay(data: MenusFormData) {
+  // Look for the first non empty menu
+  let firstDay = "";
+  for (let i = 0; i < data.days.length; i++) {
+    if (data.menus[i]) {
+      firstDay = data.days[i];
+      break;
+    }
+  }
+
+  // Look for the last non empty menu
+  let lastDay = "";
+  for (let i = data.menus.length - 1; i >= 0; i--) {
+    if (data.menus[i]) {
+      lastDay = data.days[i];
+      break;
+    }
+  }
+
+  return { firstDay, lastDay };
 }
