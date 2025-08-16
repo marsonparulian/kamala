@@ -11,6 +11,9 @@
     "esModuleInterop": true,
     "types": ["google-apps-script"]
   },
-  "include": ["appscripts/**/*.ts"],
+  "include": [
+    // "appscripts/**/*.ts"
+    "appscripts/**/Code.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

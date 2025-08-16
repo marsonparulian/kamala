@@ -5,7 +5,9 @@
   "scripts": {
     "test": "jest",
     "test:order": "jest appscripts/order",
-    "test:homepage": "jest appscripts/homepage"
+    "test:homepage": "jest appscripts/homepage",
+    "build:order": "npx tsc -p tsconfig.clasp.json",
+    "push:order": "npm run build:order && cd appscripts/order && clasp --user kamala.kitchen89 push"
   },
   "repository": {
     "type": "git",
@@ -25,6 +27,7 @@
     "jest": "^30.0.5",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0"
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.2"
   }
 }
