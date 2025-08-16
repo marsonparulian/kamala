@@ -326,7 +326,7 @@ function copyFile(clonedFormName: string): GoogleAppsScript.Drive.File {
  *
  * @param {GoogleAppsScript.Forms.Form} form The form object to modify.
  */
-function setUploadFolder(form: Form) {
+function setUploadFolder_unused(form: Form) {
   // Get the form's file ID.
   const formFileId = form.getId();
 
@@ -416,11 +416,22 @@ function addQuestions(
 
   console.log("Function not implemented");
 }
-function moveUploadFileItem(clonedForm: GoogleAppsScript.Forms.Form) {
-  console.log("Function not implemented");
+function moveUploadFileItem(clonedForm: Form) {
+  // Assumed the first item is the upload-file item
+  clonedForm.moveItem(0, clonedForm.getItems().length - 1);
 }
-function restoreUploadFileFolder(clonedForm: GoogleAppsScript.Forms.Form) {
-  console.log("Function not implemented");
+/**
+ * An destination folder is needed is a FormApp's form has a upload-file item.
+ * After copied, a DriveApp's file or FormApps's form does not have the upload-file folder.
+ * The function is to restore the upload destination folder.
+ * @param clonedForm
+ */
+function restoreUploadFileFolder(clonedForm: Form) {
+  // Note: Unable to find method to set the upload folder (restore upload folder).
+  // Thus, the folder restoration will be done manually by an editor opening the form.
+  // So this function will be left empty.
+  // TODO Create a folder in the same folder with the form
+  // TODO Set the folder as the destination folder of the form
 }
 
 /**

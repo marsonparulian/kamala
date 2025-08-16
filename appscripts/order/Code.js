@@ -112,7 +112,7 @@ function processForm(formData) {
     // Clone form
     const clonedForm = cloneForm(cloneFormName);
     // Create form content and questions
-    addOpeningParagraph(clonedForm, data);
+    createFormDescription(clonedForm, data);
     addQuestions(clonedForm, data);
     // Move upload file to the last questions
     moveUploadFileItem(clonedForm);
@@ -291,17 +291,9 @@ function createNames(data) {
  * @param form
  * @param data
  */
-function addOpeningParagraph(form, 
+function createFormDescription(form, 
 // data: { days: string[]; menus: string[]; prices: string[] }
 data) {
-    form
-        .addParagraphTextItem()
-        .setTitle("This is the title")
-        .setHelpText("This is help text");
-    form
-        .addTextItem()
-        .setTitle("This is title 342")
-        .setHelpText("This is help text 332");
     form.setDescription(`
       This is first line\n
       This is second line \n
@@ -329,8 +321,15 @@ function addQuestions(clonedForm, data) {
     console.log("Function not implemented");
 }
 function moveUploadFileItem(clonedForm) {
-    console.log("Function not implemented");
+    // Assumed the first item is the upload-file item
+    clonedForm.moveItem(0, clonedForm.getItems().length - 1);
 }
+/**
+ * An destination folder is needed is a FormApp's form has a upload-file item.
+ * After copied, a DriveApp's file or FormApps's form does not have the upload-file folder.
+ * The function is to restore the upload destination folder.
+ * @param clonedForm
+ */
 function restoreUploadFileFolder(clonedForm) {
     console.log("Function not implemented");
 }
