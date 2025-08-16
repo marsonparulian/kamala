@@ -127,12 +127,12 @@ function doPost(e: GoogleAppsScript.Events.DoPost) {
 /**
  * Form submission
  */
-function processForm(formData) {
+function processForm(formData: any) {
   console.log("ProcessForm..");
 
   // The folder to save the form
   const folderId = getOrderFormsFolderId();
-  const folder = DriveApp.getFolderById(folderId);
+  // const folder = DriveApp.getFolderById(folderId);
 
   // Acquire the form data
   const data: MenusFormData = {
@@ -148,7 +148,7 @@ function processForm(formData) {
   const clonedForm = cloneForm(cloneFormName);
 
   // Create form content and questions
-  addOpeningParagraph(clonedForm, data);
+  createFormDescription(clonedForm, data);
   addQuestions(clonedForm, data);
 
   // Move upload file to the last questions
@@ -238,19 +238,18 @@ function processForm(formData) {
 
 function cloneForm(clonedFormName: string): Form {
   // ID of the 'master' form, containing the upload file feature.
-  const sourceFormId = MASTER_FORM_ID;
+  // const sourceFormId = MASTER_FORM_ID;
 
   console.log("Starting cloneFormAndModify");
-  console.log(`sourceFormId : ${sourceFormId}`);
+  console.log(`sourceFormId : ${MASTER_FORM_ID}`);
 
   // Get the source form by its ID
-  const sourceForm = FormApp.openById(sourceFormId);
+  const sourceForm = FormApp.openById(MASTER_FORM_ID);
 
   console.log("Success retrieving the source form");
   console.log(`sourceForm : ${sourceForm}`);
   console.log(`sourceForm title :  ${sourceForm.getTitle()}`);
-  console.log(` ${sourceForm.getItems().length}`);
-  console.log(` ${sourceForm.getDescription()}`);
+  console.log(`description :  ${sourceForm.getDescription()}`);
 
   // Create a copy of the source form. This also copies all existing questions.
   const driveClonedFile = copyFile(clonedFormName);
@@ -289,12 +288,13 @@ function cloneForm(clonedFormName: string): Form {
  * @return {GoogleAppsScript.Drive.File} the copied form.
  */
 function copyFile(clonedFormName: string): GoogleAppsScript.Drive.File {
-  const sourceFormId = MASTER_FORM_ID;
+  // const sourceFormId = MASTER_FORM_ID;
+
   // Optional: Replace with the ID of the destination folder
   // If not specified, the copy will be placed in the root of your Drive
   const destinationFolderId = getOrderFormsFolderId();
 
-  const sourceFile = DriveApp.getFileById(sourceFormId);
+  const sourceFile = DriveApp.getFileById(MASTER_FORM_ID);
 
   // Create a new name for the copied form
   const newFormName = clonedFormName;
@@ -318,7 +318,6 @@ function copyFile(clonedFormName: string): GoogleAppsScript.Drive.File {
   }
 
   console.log("Finish copying file");
-
   return copiedFile;
 }
 /**
@@ -380,11 +379,17 @@ function createNames(data: MenusFormData): { clonedFormName: string } {
  * @param form
  * @param data
  */
-function addOpeningParagraph(
+function createFormDescription(
   form: Form,
-  data: { days: string[]; menus: string[]; prices: string[] }
+  // data: { days: string[]; menus: string[]; prices: string[] }
+  data: MenusFormData
 ) {
-  console.log("Function not implemented");
+  form.setDescription(`
+      This is first line\n
+      This is second line \n
+      \n
+      This is third line\n
+      `);
 }
 /**
  * Add the menu questions (radio)
