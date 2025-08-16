@@ -384,12 +384,53 @@ function createFormDescription(
   // data: { days: string[]; menus: string[]; prices: string[] }
   data: MenusFormData
 ) {
-  form.setDescription(`
-      This is first line\n
-      This is second line \n
+  const { firstDay, lastDay } = getFirstAndLastDay(data);
+  let description = `𝐌𝐞𝐧𝐮 𝐦𝐚𝐤𝐚𝐧 𝐚𝐧𝐚𝐤 untuk tgl ${firstDay} - ${lastDay}\n\n\n`;
+
+  // Loop based non empty menus item
+  for (let i = 0; i < data.menus.length; i++) {
+    if (data.menus[i]) {
+      description += `
+${data.days[i]}
+
+A. ${data.menus[i]}  Rp. ${data.prices[i]}
+B. Bento box chicken katsu + nasi + salad + mayo 20.000
+C. Bento box chicken teriyaki + nasi + salad + mayo 20.000
+D. Bento box egg chicken roll + nasi + salad + mayo 20.000
+E. Bento box shrimp roll + nasi + salad + mayo 20.000
+F. Bento box spicy chicken + nasi + salad + mayo 20.000
       \n
-      This is third line\n
-      `);
+      `;
+    }
+  }
+
+  // Add snack menu
+  description += `
+𝗠𝗘𝗡𝗨 𝗦𝗡𝗔𝗖𝗞𝗦
+
+* Dimsum regular (isi4) 15.000
+
+* Dimsum mentai (isi 3) 15.000
+
+* onigiri 10.000 (pork/beef/tuna/chicken)
+
+* Sosis bakar 10.000
+
+* Donat meses/keju/gula 5000
+
+* Bomboloni strawberry/blueberry/coklat 5000
+
+𝗠𝗼𝗵𝗼𝗻 𝗣𝗲𝗿𝗵𝗮𝘁𝗶𝗮𝗻
+Pembayaran dilakukan setelah pemesanan ke rekening BCA atas nama Maria Christina Hestidiyati norekg 7160264637, dan mohon kirim bukti transfer ke HP 0818809031. 
+Apabila ada tambahan makanan yg diambil anak-anak on the spot, akan kami report di akhir minggu yaa..
+Untuk makanan yang sudah dipesan & dibayar namun tidak diambil,  akan kami berikan ke OB/satpam sekolah ya moms
+
+Thank you so much Moms
+
+*HAPPY TUMMIES HAPPY KIDS* 😍
+  `;
+
+  form.setDescription(description);
 }
 /**
  * Add the menu questions (radio)
